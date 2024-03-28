@@ -131,7 +131,7 @@ class HBNBCommand(cmd.Cmd):
 
             for arg in arg_list:
                 try:
-                    
+
                     key, value = arg.split('=')
                     if value[0] == '"' and value[-1] == '"':
                         value = value[1:-1]
