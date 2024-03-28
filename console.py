@@ -3,7 +3,7 @@
 import cmd
 import sys
 from models.base_model import BaseModel
-from models import storage
+from models.__init__ import storage
 from models.user import User
 from models.place import Place
 from models.state import State
@@ -114,36 +114,41 @@ class HBNBCommand(cmd.Cmd):
         pass
 
     def do_create(self, args):
-        """ Create an object of any class with given parameters, # will parse args to classname arg_classname and arg_list """
-        arg_classname = args.split()[0]
-        arg_list = args.split()[1:]
-        parameter_list = {}
-        if not arg_classname:
+        """ Create an object of any class with parameters"""
+        args_list = args.split(" ")
+        if not args_list[0]:
             print("** class name missing **")
             return
-        elif arg_classname not in HBNBCommand.classes:
+        elif args_list[0] not in HBNBCommand.classes:
             print("** class doesn't exist **")
             return
-        else:
-            new_instance = HBNBCommand.classes[arg_classname](**parameter_list)
-            storage.save()
-            print(new_instance.id)
+        new_instance = HBNBCommand.classes[args_list[0]]()
 
-            for arg in arg_list:
+        """
+        split key_value in key and value and check if key has value
+        remove double quotes and replace spaces and quotes
+        """
+        for param in args_list[1:]:
+            key_value = param.split('=')
+            if len(key_value) != 2:
+                continue
+            key, value = key_value
+            if value.startswith('"') and value.endswith('"'):
+                value = value[1:-1]
+                value = value.replace('_', ' ').replace('\\"', '"')
+            else:
                 try:
-
-                    key, value = arg.split('=')
-                    if value[0] == '"' and value[-1] == '"':
-                        value = value[1:-1]
-                        value = value.replace('_', ' ')
-                        value = value.replace('\\\"', '\"')
-                    elif '.' in value:
+                    if '.' in value:
                         value = float(value)
                     else:
                         value = int(value)
-                    parameter_list[key] = value
-                except BaseException:
-                    pass
+                except ValueError:
+                    continue
+            setattr(new_instance, key, value)
+
+        new_instance.save()
+        print(new_instance.id)
+        storage.save()
 
     def help_create(self):
         """ Help information for the create method """
@@ -156,6 +161,7 @@ class HBNBCommand(cmd.Cmd):
         c_name = new[0]
         c_id = new[2]
 
+        # guard against trailing args
         if c_id and ' ' in c_id:
             c_id = c_id.partition(' ')[0]
 
@@ -220,16 +226,16 @@ class HBNBCommand(cmd.Cmd):
         print_list = []
 
         if args:
-            args = args.split(' ')[0]
+            args = args.split(' ')[0]  # remove possible trailing args
             if args not in HBNBCommand.classes:
                 print("** class doesn't exist **")
                 return
-            for k, v in storage._FileStorage__objects.items():
-                if k.split('.')[0] == args:
-                    print_list.append(str(v))
+            objects = storage.all(args)  # Use class name string directly
         else:
-            for k, v in storage._FileStorage__objects.items():
-                print_list.append(str(v))
+            objects = storage.all()
+
+        for obj in objects.values():
+            print_list.append(str(obj))
 
         print(print_list)
 
