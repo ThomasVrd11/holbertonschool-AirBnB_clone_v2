@@ -1,27 +1,24 @@
 #!/usr/bin/python3
-""" This module defines a class DBStorage and a class attribute for the storage engine """
-
-from sqlalchemy.orm import sessionmaker, scoped_session
+"""This module defines a class to manage database storage for hbnb clone"""
 from sqlalchemy import create_engine
-from models.base_model import BaseModel, Base
+import os
+from models.base_model import Base
+from sqlalchemy.orm import sessionmaker, scoped_session
 from models.user import User
 from models.place import Place
 from models.state import State
 from models.city import City
 from models.amenity import Amenity
 from models.review import Review
-import os
-
-"""amazing"""
 
 
 class DBStorage():
-    """This class defines the attributes and methods of DBStorage"""
+    """dbstorage class engine"""
     __engine = None
     __session = None
 
     def __init__(self):
-        """ i cant bear to write this anymore"""
+        """initialise the dbstorage"""
         hbnb_usr = os.getenv("HBNB_MYSQL_USER")
         hbnb_pwd = os.getenv("HBNB_MYSQL_PWD")
         hbnb_host = os.getenv("HBNB_MYSQL_HOST", "localhost")
