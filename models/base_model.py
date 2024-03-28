@@ -3,24 +3,20 @@
 import uuid
 from datetime import datetime
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy import Column, DateTime, String
-import models
-from os import getenv
+from sqlalchemy import Column, String, DateTime
 
 
-# Conditional base declaration based on the storage type
 Base = declarative_base()
 
 
 class BaseModel:
-    """The BaseModel class from which future classes will be derived"""
+    """A base class for all hbnb models"""
+    id = Column(String(60), unique=True, nullable=False, primary_key=True)
+    created_at = Column(DateTime, nullable=False, default=datetime.utcnow())
+    updated_at = Column(DateTime, nullable=False, default=datetime.utcnow())
 
-    id = Column(String(60), nullable=False, primary_key=True)
-    created_at = Column(DateTime, nullable=False, default=datetime.utcnow)
-    updated_at = Column(DateTime, nullable=False, default=datetime.utcnow)
-
-    def __init__(self, **kwargs):
-        """Initialization of the base model"""
+    def __init__(self, *args, **kwargs):
+        """Instatntiates a new model"""
         self.id = str(uuid.uuid4())
         self.created_at = datetime.now()
         self.updated_at = datetime.now()
@@ -33,24 +29,19 @@ class BaseModel:
                 setattr(self, key, value)
 
     def __str__(self):
-        """String representation of the BaseModel class"""
-        return "[{:s}] ({:s}) {}".format(self.__class__.__name__, self.id,
-                                         self.__dict__)
+        """Returns a string representation of the instance"""
+        cls = (str(type(self)).split('.')[-1]).split('\'')[0]
+        return '[{}] ({}) {}'.format(cls, self.id, self.__dict__)
 
     def save(self):
-        """updates the attribute 'updated_at' with the current datetime"""
+        """Updates updated_at with current time when instance is changed"""
+        from models import storage
         self.updated_at = datetime.now()
-        models.storage.new(self)
-        models.storage.save()
+        storage.new(self)
+        storage.save()
 
     def to_dict(self):
-        """
-        Returns a dictionary containing all key/values of __dict__
-        of the instance.
-        This includes the class name, and the created_at and updated_at times
-        formatted as strings. It also handles removing any SQLAlchemy specific
-        attributes.
-        """
+        """Convert instance into dict format"""
         dictionary = {}
         dictionary.update(self.__dict__)
         dictionary.update({'__class__':
@@ -65,4 +56,3 @@ class BaseModel:
         """delete the current instance from the storage"""
         from models import storage
         storage.delete(self)
-        
