@@ -25,7 +25,7 @@ class DBStorage:
         database = getenv("HBNB_MYSQL_DB")
         env = getenv("HBNB_ENV")
         self.__engine = create_engine("mysql+mysqldb://{}:{}@{}/{}".format(
-                        user, password, host, database), pool_pre_ping=True)
+            user, password, host, database), pool_pre_ping=True)
         if env == "test":
             Base.metadata.drop_all(self.__engine)
 
@@ -66,4 +66,3 @@ class DBStorage:
         """Method to close the current session"""
         self.reload()
         self.__session.close()
-        
